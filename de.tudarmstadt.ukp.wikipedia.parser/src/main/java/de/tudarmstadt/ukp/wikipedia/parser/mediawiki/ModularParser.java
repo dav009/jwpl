@@ -1047,24 +1047,39 @@ public class ModularParser implements MediaWikiParser,
 						}
 					}
 
-					// images
-					for (String s : tokenize(sm, startSpan.getEnd(), endSpan
-							.getStart(), lineSeparator))
-					{
-						sb.append("[[" + s + "]]" + lineSeparator);
-					}
+                    // Images sometimes carry a paragraph with them. Those paragraphs can contain wikipedia links
+                    // as well as usual media-wiki format content.
+                    // This piece of code separates the paragraph
+                    // so that the rest of the pipeline can process it and extract relevant information from it
+                    // please refer to : https://en.wikipedia.org/wiki/Help:Gallery_tag
+                    for (String imageParagraph : tokenize(sm, startSpan.getEnd(), endSpan
+                        .getStart(), lineSeparator))
+                    {
+                        String[] splitImageParagraph = imageParagraph.split("\\|");
+                        String imageLink = "";
+                        if(splitImageParagraph.length == 1){
+                             // Figures without a paragraph
+                            imageParagraph = "";
+                            imageLink = splitImageParagraph[0];
+                        } else{
+                            // Figures with a paragraph
+                            imageParagraph = imageParagraph.replace(splitImageParagraph[0] + "|", "");
+                            imageLink = splitImageParagraph[0];
+                        }
+                        sb.append("[[" + imageIdentifers.get(0) + ":" + imageLink + "]]" + imageParagraph + lineSeparator);
+                    }
 
-					// replace the source and remove the tags
-					sm.replace(startSpan.getStart(), endSpan.getEnd(), sb
-							.toString());
-				}
-				else
-				{
-					continue;
-				}
-			}
-		}
-	}
+                    // replace the source and remove the tags
+                    sm.replace(startSpan.getStart(), endSpan.getEnd(), sb
+                        .toString());
+                }
+                else
+                {
+                    continue;
+                }
+            }
+        }
+    }
 
 	private Table buildTable(SpanManager sm,
 			ContentElementParsingParameters cepp, LinkedList<Span> lineSpans)

@@ -123,4 +123,13 @@ public class Link extends ParsedPageObject{
 		}
 		return result.toString();
 	}
+
+    public boolean equals(Link l){
+        if ( l.getPos().getStart() == this.getPos().getStart() &&
+             l.getPos().getEnd() == this.getPos().getEnd() &&
+             l.getText().equals(this.getText()) &&
+             l.getTarget().equals(this.getTarget()))
+            return true;
+        return false;
+    }
 }
